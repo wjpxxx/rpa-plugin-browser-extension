@@ -2,6 +2,7 @@
 const InstructionQueue = {
     queue:[],
     currentInstruction: {},  //类型:Instruction 当前指令
+    returnInstruction: [], //类型:Instruction 由于指令集可能会有嵌套使用,这里利用数组的push和shift,来解决指令集返回的问题
     //指令进入队列,需要进行指令编排
     pushQueue: function (instruction){
         
