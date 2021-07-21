@@ -1,6 +1,5 @@
 import ext from "./utils/ext";
 import storage from "./utils/storage";
-import InstructionQueue from "./utils/instructionqueue";
 
 var popup = document.getElementById("app");
 storage.get('color', function(resp) {

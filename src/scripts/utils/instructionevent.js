@@ -6,19 +6,23 @@ const InstructionEvent = {
     //比如Params:{"target":"window"}表示创建一个新窗口打开window.open(Instruction.Url);
     //比如Params:{"target":"location"}表示在当前页面打开 windows.location.href=Instruction.Url;
     OPEN:"open",
-    //指令执行一段JavaScript脚本,这个时候指令的Input属性是一段JavaScript脚本文本内容,利用Function函数
+    //指令执行一段JavaScript脚本,这个时候指令的Params.body属性是一段JavaScript脚本文本内容,利用Function函数
     //let script=new Function(Input,this,"逻辑程序")
     JAVASCRIPT:"javascript",
-    //指令执行创建一个dom元素,document.createElement调用,Input是要创建元素的属性值
-    //如:Input:{tagName:"a", href:"http://www.baidu.com"}
+    //指令执行创建一个dom元素,document.createElement调用,Params是要创建元素的属性值
+    //如:Params:{tagName:"a", attrs:{href:"http://www.baidu.com"}}
     CREATEELEMENT: "createElement",
     //创建一个子dom元素在一个父dom元素下,Input可以是一个父元素dom对象，如果Input是空,此指令效果跟CREATEELEMENT是一样的
     //如果Input不为空,则在Input指向的dom元素下创建一个子元素dom
     CREATEELEMENTTOPARENT:"createElementToParent",
-    //获得dom元素 利用jQuery对象选择器实现对dom元素的获取,Element属性为对象选择器的文本写法,Output输出dom对象
+    //获得dom元素 利用querySelector对象选择器实现对dom元素的获取,Element属性为对象选择器的文本写法,Output输出dom对象
     //这个如果跟CREATEELEMENTTOPARENT连用,比如上一条指令是GETELEMENT获取元素dom,下一条指令为CREATEELEMENTTOPARENT
     //这个时候Input为GETELEMENT获取的dom对象,在其底下创建出一个dom子元素出来
     GETELEMENT:"getElement",
+    //获得dom元素 利用querySelector对象选择器实现对dom元素的获取,Element属性为对象选择器的文本写法,Output输出dom对象
+    //这个如果跟CREATEELEMENTTOPARENT连用,比如上一条指令是GETELEMENTS获取元素dom,下一条指令为CREATEELEMENTTOPARENT
+    //这个时候Input为GETELEMENT获取的dom对象,在其底下创建出一个dom子元素出来
+    GETELEMENTS: "getElements",
     //出发dom元素的事件,这个时候Input是一个dom元素,这个时候触发Input对应dom元素的事件,需要触发什么事件,参数是什么
     //可以放入Params中,比如:想要触发按钮的点击事件,先调用GETELEMENT,获得dom元素--->放入TRIGGER指令的Input
     //触发点击事件Params:{typeArg:"click", eventInit:{"bubbles":true, "cancelable":false}}
@@ -27,8 +31,8 @@ const InstructionEvent = {
     TRIGGER:"trigger",
     //IF条件判断指令 读取当前指令的时候先利用Function函数将指令的IfFunction转为函数
     //当Input有值时,IfFunction(Input,this){//逻辑,最后返回值true或者false}
-    //当Input无值时,Element有值时,通过选择器获取到dom元素当成Input值,IfFunction=new Function("Input","this","//要执行的逻辑代码 return true;");
-    //利用Function,IfFunction=new Function("Input","this","//要执行的逻辑代码 return true;");
+    //当Input无值时,Element有值时,通过选择器获取到dom元素当成Input值,IfFunction=new Function("topQueue", "curQueue", "input", "inputType","instruction","执行逻辑返回true或则false")
+    //利用Function,IfFunction=new Function("topQueue", "curQueue", "input", "inputType","instruction","执行逻辑返回true或则false")
     //调用 IfFunction(Input, this, "return true;")
     //如果返回true的时候,走向IfYes指令队列
     //如果返回false的时候,走向IfNo指令队列

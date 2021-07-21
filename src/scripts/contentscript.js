@@ -1,5 +1,7 @@
 import ext from "./utils/ext";
-
+import InstructionRun from "./utils/instructionrun";
+InstructionRun.run();
+//console.log(InstructionRun);
 var extractTags = () => {
   var url = document.location.href;
   if(!url || !url.match(/^http/)) return;
