@@ -31,7 +31,7 @@ function InstructionQueue(){
     };
     //构建状态函数
     this.buildStatusFunction = function (instruction){
-        instruction.setStatus = function (status, msg) { this.Status = status; this.Msg = msg;};
+        instruction.setStatus = function (status, msg) { this.Status = status; this.Msg = msg; msg ? Console.err(msg):"";};
         instruction.getStatus = function () { return this.Status; };
         instruction.setFinish = function () { this.setStatus(2); };
         instruction.setRuning = function () { this.setStatus(1);};

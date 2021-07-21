@@ -23,10 +23,10 @@ const InstructionAnaly = {
                 instruction.ForeachInput = entry[1];
                 instruction.ForeachInputType = "dom";
                 instruction.InputType="dom";
-                this.single(instruction);
+                await this.single(instruction);
             }
         }else{
-            this.single(instruction);
+            await this.single(instruction);
         }
         if (instruction.getStatus()==1) {
             instruction.setFinish();
@@ -57,7 +57,7 @@ const InstructionAnaly = {
         }
     },
     //单条指令无循环下的
-    single: function (instruction){
+    single:async function (instruction){
         Console.log("指令:", instruction.Name);
         switch (instruction.Event) {
             case InstructionEvent.OPEN:
@@ -91,6 +91,17 @@ const InstructionAnaly = {
             case InstructionEvent.TRIGGER:
                 //触发事件指令
                 this.trigger(instruction);
+                break;
+            case InstructionEvent.FETCH:
+                //触发事件指令
+                if (instruction.Params.isSync){
+                    //同步执行
+                   await this.runfetch(instruction);
+                }else{
+                    //异步执行
+                    this.runfetch(instruction);
+                }
+                //Console.log("执行完毕");
                 break;
             default:
                 break;
@@ -130,17 +141,20 @@ const InstructionAnaly = {
         }
     },
     //指令执行一段JavaScript脚本,这个时候指令的Params.body属性是一段JavaScript脚本文本内容,利用Function函数
-    //let script=new Function(foreachInput, foreachInputType, input, inputType,"逻辑程序")
+    //let script=new Function(foreachInput, foreachInputType, input, inputType,instruction,"逻辑程序")
     //逻辑程序返回值必须定死return {output:{},outputType:"dom"};
     javascript: function (instruction){
         if (instruction.Params.body) {
             var body = instruction.Params.body;
-            var f = new Function("foreachInput", "foreachInputType", "input", "inputType",body);
-            var ret = f(instruction.ForeachInput, instruction.ForeachInputType, instruction.Input, instruction.InputType);
-            if (ret) {
-                instruction.Output = ret.output;
-                instruction.OutputType = ret.outputType;
-            }else{
+            Console.log("javascript");
+            try{
+                var f = new Function("foreachInput", "foreachInputType", "input", "inputType","instruction", body);
+                var ret = f(instruction.ForeachInput, instruction.ForeachInputType, instruction.Input, instruction.InputType, instruction);
+                if (ret) {
+                    instruction.Output = ret.output;
+                    instruction.OutputType = ret.outputType;
+                }
+            }catch(e){
                 instruction.setFail("javascript脚本异常");
             }
         }
@@ -225,6 +239,29 @@ const InstructionAnaly = {
             instruction.Input.dispatchEvent(evt);
         }else{
             instruction.setFail("无dom元素可触发");
+        }
+    },
+    //发起fetch请求
+    //Params参数:{input:"www.baidu.com",init:执行逻辑javascrpit字符串,Function("input", "inputType","instruction","执行逻辑返回fetch所需的init"),
+    //isSync:true  //是否同步执行 true 同步 false异步,异步的时候流程继续往下走不会等返回，同步的时候下一个指令的input为fetch请求返回的数据
+    //}
+    runfetch:async function (instruction){
+        if (instruction.Params && instruction.Params.input){
+            var f = new Function("input", "inputType", "instruction", instruction.Params.init);
+            var params=f(instruction.Input,instruction.InputType,instruction);
+            var data=await fetch(instruction.Params.input, params).then(response =>{
+                if (params.headers&&params.headers["content-type"] =="application/json"){
+                    return response.json();
+                }else{
+                    return response.text();
+                }
+            });
+            instruction.Output=data;
+            if (params.headers && params.headers["content-type"] == "application/json") {
+                instruction.OutputType ="json";
+            }else{
+                instruction.OutputType = "text";
+            }
         }
     },
 }

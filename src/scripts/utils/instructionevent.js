@@ -7,7 +7,7 @@ const InstructionEvent = {
     //比如Params:{"target":"location"}表示在当前页面打开 windows.location.href=Instruction.Url;
     OPEN:"open",
     //指令执行一段JavaScript脚本,这个时候指令的Params.body属性是一段JavaScript脚本文本内容,利用Function函数
-    //let script=new Function(Input,this,"逻辑程序")
+    //let script=new Function(foreachInput, foreachInputType, input, inputType,instruction,"逻辑程序")
     JAVASCRIPT:"javascript",
     //指令执行创建一个dom元素,document.createElement调用,Params是要创建元素的属性值
     //如:Params:{tagName:"a", attrs:{href:"http://www.baidu.com"}}
@@ -42,6 +42,11 @@ const InstructionEvent = {
     //如果Input有值时,Input是个数组,遍历Input数组,
     //取出Input[0]当成Foreach子指令集第一条的输入Input,并且也是ForeachInput的值,
     //第二条指令的Input是第一条指令的Output,但是ForeachInput依然延续下去
-    FOREACH:"foreach"
+    FOREACH:"foreach",
+    //发起fetch请求
+    //Params参数:{input:"www.baidu.com",init:Function("input", "inputType","instruction","执行逻辑返回fetch所需的init参数对象"),
+    //isSync:true  //是否同步执行 true 同步 false异步,异步的时候流程继续往下走不会等返回，同步的时候下一个指令的input为fetch请求返回的数据
+    //}
+    FETCH:"fetch",
 };
 module.exports = InstructionEvent;
