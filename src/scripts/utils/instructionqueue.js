@@ -110,7 +110,7 @@ function InstructionQueue(){
             //Console.log("foreach指令:", ins);
             that.parentInstruction = ins;
             this.currentInstruction = this.pointer.nextInstruction(ins.Input, ins.InputType);
-            this.currentInstruction.ForeachInputType = "dom";
+            this.currentInstruction.ForeachInputType = ins.InputType.slice(0, ins.InputType.length-1);
             this.currentInstruction.ForeachInput = ins.Input[ins.ForeachIndex];
             this.currentInstruction.ForeachIndex = ins.ForeachIndex;
             this.currentInstruction.ForeachInputs = ins.Input;

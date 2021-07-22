@@ -8,6 +8,13 @@ const InstructionEvent = {
     OPEN:"open",
     //指令执行一段JavaScript脚本,这个时候指令的Params.body属性是一段JavaScript脚本文本内容,利用Function函数
     //let script=new Function(foreachInput, foreachInputType, input, inputType,instruction,"逻辑程序")
+    //foreachInput:在FOREACH指令的时候,此值为所遍历的单元素的值
+    //foreachInputType:在FOREACH指令的时候,此值为所遍历的单元素的类型
+    //input：上一条指令的输出
+    //inputType：上一条指令的输出类型
+    //instruction:当前指令对象,在foreach指令时instruction.ForeachInputs为所遍历的元素数组
+    //instruction.ForeachIndex为当前执行到第几个元素
+    //逻辑程序返回值必须定死return {output:{},outputType:"dom"};
     JAVASCRIPT:"javascript",
     //指令执行创建一个dom元素,document.createElement调用,Params是要创建元素的属性值
     //如:Params:{tagName:"a", attrs:{href:"http://www.baidu.com"}}
@@ -28,6 +35,7 @@ const InstructionEvent = {
     //触发点击事件Params:{eventType:"event",typeArg:"click", eventInit:[参数值...]}
     //eventType事件类型:MouseEvent,Event,InputEvent,UIEvent等等,参考：https://developer.mozilla.org/zh-CN/docs/Web/API/Event
     //可以拿来直接初始化Event对象let evt=new Event(Params.typeArg, Params.eventInit);
+    //Params.eventInit:初始化事件所需要的参数 如：eventType=UIEvent,Params.eventInit=[canBubble,cancelable,view,detail]实际传入值[true, true, window, 1]
     //Input.dispatchEvent(evt)
     TRIGGER:"trigger",
     //IF条件判断指令 读取当前指令的时候先利用Function函数将指令的IfFunction转为函数

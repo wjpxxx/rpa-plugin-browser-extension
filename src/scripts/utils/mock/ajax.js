@@ -48,7 +48,6 @@ var ajax = [
         IfFunction: { body: "return true;" },  //if条件判断使用函数如果返回true 则执行IfYes的子指令集,如果返回false则执行IfNo指令集
         ForeachInputType: "dom", //输入参数类型值有: dom, json
         ForeachInput: {      //foreach指令集时,保存foreach指令的Input的单个元素输入参数
-
         },
         InputType: "dom",  //输入参数类型值有:dom,json
         Input: {         //输入参数
