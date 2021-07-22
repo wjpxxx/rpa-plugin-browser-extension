@@ -25,7 +25,8 @@ const InstructionEvent = {
     GETELEMENTS: "getElements",
     //出发dom元素的事件,这个时候Input是一个dom元素,这个时候触发Input对应dom元素的事件,需要触发什么事件,参数是什么
     //可以放入Params中,比如:想要触发按钮的点击事件,先调用GETELEMENT,获得dom元素--->放入TRIGGER指令的Input
-    //触发点击事件Params:{typeArg:"click", eventInit:{"bubbles":true, "cancelable":false}}
+    //触发点击事件Params:{eventType:"event",typeArg:"click", eventInit:[参数值...]}
+    //eventType事件类型:MouseEvent,Event,InputEvent,UIEvent等等,参考：https://developer.mozilla.org/zh-CN/docs/Web/API/Event
     //可以拿来直接初始化Event对象let evt=new Event(Params.typeArg, Params.eventInit);
     //Input.dispatchEvent(evt)
     TRIGGER:"trigger",

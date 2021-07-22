@@ -15,8 +15,10 @@ const InstructionAnaly = {
         await this.delay(instruction);
         //Console.log("指令:", instruction, "input:", instruction.Input, "inputType:", instruction.InputType, "ForeachInputType:", instruction.ForeachInputType, "ForeachInput:", instruction.ForeachInput);
         //Console.log("指令:", instruction);
+        /*
         if (instruction.ForeachInputs && instruction.ForeachInputs.entries) {
             //带循环的
+            
             for (var entry of instruction.ForeachInputs.entries()){
                 instruction.ForeachIndex = entry[0];
                 instruction.Input = entry[1];
@@ -25,9 +27,13 @@ const InstructionAnaly = {
                 instruction.InputType="dom";
                 await this.single(instruction);
             }
+            
         }else{
             await this.single(instruction);
         }
+        */
+        await this.single(instruction);
+
         if (instruction.getStatus()==1) {
             instruction.setFinish();
         }
@@ -58,7 +64,8 @@ const InstructionAnaly = {
     },
     //单条指令无循环下的
     single:async function (instruction){
-        Console.log("指令:", instruction.Name);
+        //Console.log("指令:", instruction.Name);
+        Console.log("指令:", instruction);
         switch (instruction.Event) {
             case InstructionEvent.OPEN:
                 //打开窗口
@@ -146,10 +153,11 @@ const InstructionAnaly = {
     javascript: function (instruction){
         if (instruction.Params.body) {
             var body = instruction.Params.body;
-            Console.log("javascript");
+            //Console.log("javascript");
             try{
                 var f = new Function("foreachInput", "foreachInputType", "input", "inputType","instruction", body);
                 var ret = f(instruction.ForeachInput, instruction.ForeachInputType, instruction.Input, instruction.InputType, instruction);
+                //Console.log("ret:",ret);
                 if (ret) {
                     instruction.Output = ret.output;
                     instruction.OutputType = ret.outputType;
@@ -226,16 +234,29 @@ const InstructionAnaly = {
     //取出Input[0]当成Foreach子指令集第一条的输入Input,并且也是ForeachInput的值,
     //第二条指令的Input是第一条指令的Output,但是ForeachInput依然延续下去
     foreach: function (instruction){
-        //Console.log("指令:", instruction);
+        //Console.log("FOR指令:", instruction);
     },
     //出发dom元素的事件,这个时候Input是一个dom元素,这个时候触发Input对应dom元素的事件,需要触发什么事件,参数是什么
     //可以放入Params中,比如:想要触发按钮的点击事件,先调用GETELEMENT,获得dom元素--->放入TRIGGER指令的Input
-    //触发点击事件Params:{typeArg:"click", eventInit:{"bubbles":true, "cancelable":false}}
+    //触发点击事件Params:{eventType:"event",typeArg:"click", eventInit:[参数值...]}
+    //eventType事件类型:MouseEvent,Event,InputEvent,UIEvent等等,参考：https://developer.mozilla.org/zh-CN/docs/Web/API/Event
     //可以拿来直接初始化Event对象let evt=new Event(Params.typeArg, Params.eventInit);
     //Input.dispatchEvent(evt)
     trigger: function (instruction){
         if (instruction.InputType == "dom" && instruction.Input){
-            var evt = new Event(instruction.Params.typeArg, instruction.Params.eventInit);
+            var evt = document.createEvent(instruction.Params.eventType);
+            var p=[];
+            if (instruction.Params.eventInit){
+                p = instruction.Params.eventInit;
+            }
+            if (instruction.Params.eventType =="Event"){
+                evt.initEvent(instruction.Params.typeArg, ...p);
+            } else if (instruction.Params.eventType == "MouseEvent") {
+                evt.initMouseEvent(instruction.Params.typeArg, ...p);
+            } else {
+                evt.initUIEvent(instruction.Params.typeArg, ...p);
+            }
+            //Console.log(instruction.Input);
             instruction.Input.dispatchEvent(evt);
         }else{
             instruction.setFail("无dom元素可触发");

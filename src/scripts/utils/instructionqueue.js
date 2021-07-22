@@ -6,6 +6,8 @@ function InstructionQueue(){
     this.currentInstruction = undefined;//类型:Instruction 当前指令,在子指令集中的currentInstruction没有实际意义
     this.parent = undefined;//类型:Instruction 由于指令集可能会有嵌套使用,这里利用数组的push和shift,来解决指令集返回的问题
     this.pointer=this;  //队列指针,当前处于哪个队列
+    this.foreachQueue=[];//foreach指令时缓存它的指令队列用于循环用
+    this.parentInstruction=undefined;  //父级指令,进入子指令前,父级保留当前执行的指令
     //指令进入队列,需要进行指令编排
     this.pushQueue = function (instruction){
         this.clearForeach(instruction);
@@ -101,18 +103,18 @@ function InstructionQueue(){
             }
         } else if (ins &&ins.Event == InstructionEvent.FOREACH) {
             //FOREACH指令
-            //Console.log("foreach指令:",ins);
             var that = this.pointer;
             this.pointer = ins.Foreach;
             this.pointer.parent = that;
-            this.currentInstruction.ForeachInputType = ins.InputType;
-            this.currentInstruction.ForeachInput = ins.Input;
-            this.currentInstruction.ForeachInputs = ins.Input;
+            this.pointer.parent.foreachQueue = JSON.parse(JSON.stringify(this.pointer.queue));
+            //Console.log("foreach指令:", ins);
+            that.parentInstruction = ins;
             this.currentInstruction = this.pointer.nextInstruction(ins.Input, ins.InputType);
-            this.currentInstruction.ForeachInputType = ins.InputType;
-            this.currentInstruction.ForeachInput = ins.Input;
+            this.currentInstruction.ForeachInputType = "dom";
+            this.currentInstruction.ForeachInput = ins.Input[ins.ForeachIndex];
+            this.currentInstruction.ForeachIndex = ins.ForeachIndex;
             this.currentInstruction.ForeachInputs = ins.Input;
-            //Console.log(this.currentInstruction.ForeachInput, ins.Input);
+            //Console.log("next:",this.currentInstruction);
             return this.currentInstruction;
         }else{
             //其他指令
@@ -125,6 +127,7 @@ function InstructionQueue(){
                 if (this.currentInstruction && this.currentInstruction.ForeachInputs && Object.keys(this.currentInstruction.ForeachInputs).length > 0) {
                     //向下继承
                     task.ForeachInput = this.currentInstruction.ForeachInput;
+                    task.ForeachIndex = this.currentInstruction.ForeachIndex;
                     task.ForeachInputs = this.currentInstruction.ForeachInputs;
                 }
                 this.currentInstruction = task;
@@ -137,11 +140,24 @@ function InstructionQueue(){
                 //往父的回
                 var that = this.pointer;
                 this.pointer = that.parent;
-                that.parent = undefined;
-                that.currentInstruction.ForeachInput=undefined;
-                that.currentInstruction.ForeachInputType = undefined;
-                that.currentInstruction.ForeachInputs = undefined;
-                this.pointer.currentInstruction = that.currentInstruction;
+                var fi = that.parent.parentInstruction.ForeachIndex+1;
+                var fes = this.pointer.currentInstruction.ForeachInputs;
+                //Console.log("FI：", fi);
+                if (that.currentInstruction.ForeachInput != undefined && fi < fes.length){
+                    //是for循环的--还应该继续循环
+                    that.parent.parentInstruction.ForeachIndex+=1;
+                    this.pointer.currentInstruction = that.parent.parentInstruction;
+                    this.pointer.currentInstruction.Foreach.pushsQueue(that.parent.foreachQueue);
+                    //Console.log("循环结束了", this.pointer.currentInstruction);
+                }else{
+                    that.parent = undefined;
+                    that.currentInstruction.ForeachIndex = 0;
+                    that.currentInstruction.ForeachInput = undefined;
+                    that.currentInstruction.ForeachInputType = undefined;
+                    that.currentInstruction.ForeachInputs = undefined;
+                    this.pointer.currentInstruction = that.currentInstruction;
+                    //Console.log("循环结束了2", this.pointer);
+                }
             }
             
         }

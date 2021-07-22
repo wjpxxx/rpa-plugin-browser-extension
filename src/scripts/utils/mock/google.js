@@ -116,6 +116,7 @@ var baidu = [
             Name: "获取元素1"
         },
         Params: {        //额外参数
+            eventType: "Event",
             typeArg:"click",
         },
         Status: 0,       //指令状态 0.待执行 1.执行中 2.执行完成 3.执行终止(下一条指令不可在执行了) -1.执行失败
